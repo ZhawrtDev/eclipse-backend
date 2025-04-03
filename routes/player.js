@@ -64,4 +64,41 @@ router.post("/delete", async (req, res) => {
     }
 });
 
+router.get("/get", async (req, res) => {
+    try {
+        let { owner } = req.query;
+
+        if (!owner) {
+            return res.status(400).json({ error: "O parâmetro 'owner' é obrigatório!" });
+        }
+
+        owner = owner.toLowerCase();
+
+        const players = await prisma.player.findMany({
+            where: {
+                owner: { equals: owner, mode: "insensitive" }
+            },
+            select: {
+                id: true,
+                name: true,
+                displayName: true,
+                thumbnail: true,
+                timestamp: true,
+                owner: true
+            }
+        });
+
+        const normalizedPlayers = players.map(player => ({
+            ...player,
+            name: player.name.toLowerCase(),
+            owner: player.owner.toLowerCase()
+        }));
+
+        res.json(normalizedPlayers);
+    } catch (error) {
+        console.error("Erro ao buscar jogadores:", error);
+        res.status(500).json({ error: "Erro interno do servidor." });
+    }
+});
+
 export default router;
