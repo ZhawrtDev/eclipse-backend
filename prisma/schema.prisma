@@ -1,0 +1,47 @@
+datasource db {
+  provider = "postgresql" 
+  url      = env("DATABASE_URL") 
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id              String  @id @default(uuid())
+  discordId       String  @unique
+  discordUsername String  
+  email           String? @unique
+  avatar          String?
+  discordRole     String?
+  robloxUsername  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Player {
+  id          String  @id @default(uuid())
+  name        String
+  displayName String
+  thumbnail   String
+  timestamp   DateTime
+  owner       String
+}
+
+
+model Game {
+  id                String  @id @unique
+  name              String
+  creatorName       String
+  playing          Int?
+  visits           Int?
+  maxPlayers       Int?
+  updated          DateTime
+  created          DateTime
+  favoritedCount   Int?
+  universeAvatarType String
+  imageUrl         String
+  description      String?
+  jobId            String?
+  receivedAt       DateTime @default(now())
+}
