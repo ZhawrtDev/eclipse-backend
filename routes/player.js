@@ -101,7 +101,7 @@ router.get("/get", async (req, res) => {
 
         const normalizedPlayers = players.map(player => ({
             ...player,
-            name: player.name.toLowerCase(),
+            name: player.name,
             owner: player.owner.toLowerCase()
         }));
 
