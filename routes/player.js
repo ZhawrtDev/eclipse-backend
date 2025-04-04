@@ -7,7 +7,11 @@ const prisma = new PrismaClient();
 router.post("/", async (req, res) => {
     try {
         console.log("Dados recebidos:", req.body);
-        const { name, displayName, thumbnail, timestamp, owner } = req.body;
+        let { name, displayName, thumbnail, timestamp, owner } = req.body;
+
+        if (thumbnail && typeof thumbnail === "object" && Array.isArray(thumbnail.data)) {
+            thumbnail = thumbnail.data[0]?.imageUrl;
+        }
 
         if (!name || !displayName || !thumbnail || !timestamp || !owner) {
             return res.status(400).json({ error: "Todos os campos são obrigatórios!" });
