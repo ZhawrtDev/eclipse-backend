@@ -1,5 +1,6 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
+import axios from "axios"; 
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -9,13 +10,18 @@ router.post("/", async (req, res) => {
         console.log("Dados recebidos:", req.body);
         let { name, displayName, thumbnail, timestamp, owner } = req.body;
 
-        if (thumbnail && typeof thumbnail === "object" && Array.isArray(thumbnail.data)) {
-            thumbnail = thumbnail.data[0]?.imageUrl;
-        }
-
         if (!name || !displayName || !thumbnail || !timestamp || !owner) {
             return res.status(400).json({ error: "Todos os campos são obrigatórios!" });
         }
+
+        const response = await axios.get(thumbnail);
+        const imageUrl = response.data?.data?.[0]?.imageUrl;
+
+        if (!imageUrl) {
+            return res.status(400).json({ error: "Não foi possível extrair o imageUrl do thumbnail fornecido." });
+        }
+
+        thumbnail = imageUrl;
 
         const existingPlayer = await prisma.player.findFirst({
             where: {
@@ -40,6 +46,7 @@ router.post("/", async (req, res) => {
         res.status(500).json({ error: "Erro interno do servidor." });
     }
 });
+
 
 router.post("/delete", async (req, res) => {
     try {
