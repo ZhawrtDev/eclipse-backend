@@ -49,30 +49,38 @@ router.post("/", async (req, res) => {
 
 
 router.post("/delete", async (req, res) => {
-    try {
-        const { name, thumbnail } = req.body;
+  try {
+    const { name, thumbnail } = req.body;
 
-        if (!name && !thumbnail) {
-            return res.status(400).json({ error: "É necessário fornecer o nome ou o thumbnail do jogador para deletá-lo." });
-        }
-
-        const whereClause = {};
-        if (name) whereClause.name = name;
-        if (thumbnail) whereClause.thumbnail = thumbnail;
-
-        const deletedPlayer = await prisma.player.deleteMany({
-            where: whereClause
-        });
-
-        if (deletedPlayer.count === 0) {
-            return res.status(404).json({ error: "Jogador não encontrado." });
-        }
-
-        res.json({ message: "Jogador deletado com sucesso!" });
-    } catch (error) {
-        console.error("Erro ao deletar jogador:", error);
-        res.status(500).json({ error: "Erro interno do servidor." });
+    if (!name && !thumbnail) {
+      return res.status(400).json({
+        error: "É necessário fornecer o nome ou o thumbnail do jogador para deletá-lo."
+      });
     }
+
+    const whereClause = {};
+    if (name) whereClause.name = name;
+    if (thumbnail) whereClause.thumbnail = thumbnail;
+
+    const duplicatedPlayers = await prisma.player.findMany({
+      where: whereClause
+    });
+
+    if (duplicatedPlayers.length === 0) {
+      return res.status(404).json({ error: "Jogador não encontrado." });
+    }
+
+    const deletedPlayers = await prisma.player.deleteMany({
+      where: whereClause
+    });
+
+    res.json({
+      message: `Foram deletados ${deletedPlayers.count} jogador(es) com os dados correspondentes.`
+    });
+  } catch (error) {
+    console.error("Erro ao deletar jogador:", error);
+    res.status(500).json({ error: "Erro interno do servidor." });
+  }
 });
 
 router.get("/get", async (req, res) => {
