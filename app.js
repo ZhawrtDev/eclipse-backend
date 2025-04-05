@@ -10,6 +10,12 @@ import namePlayer from "./routes/player.js";
 
 const app = express();
 dotenv.config();
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 const prisma = new PrismaClient();
