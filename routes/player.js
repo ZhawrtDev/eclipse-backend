@@ -96,12 +96,27 @@ router.post("/delete", async (req, res) => {
 
 router.get("/get", async (req, res) => {
   try {
-    let { owner } = req.query;
+    let { owner, id } = req.query;
 
     if (!owner) {
-      return res
-        .status(400)
-        .json({ error: "O parâmetro 'owner' é obrigatório!" });
+      return res.status(400).json({ error: "O parâmetro 'owner' é obrigatório!" });
+    }
+
+    if (!id) {
+      return res.status(400).json({ error: "O parâmetro 'id' é obrigatório!" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: { discordRole: true }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado." });
+    }
+
+    if (user.discordRole === "STANDARD") {
+      return res.status(403).json({ error: "Acesso negado." });
     }
 
     owner = owner.toLowerCase();
