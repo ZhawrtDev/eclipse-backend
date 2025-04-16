@@ -61,11 +61,11 @@ router.get("/discord", async (req, res) => {
 
       const isMember = guildMembersResponse.data.some((member) => member.user.id === id);
       if (!isMember) {
-        return res.redirect("https://eclipse-serverside.vercel.app/error?msg=not_in_guild");
+        return res.redirect("https://www.serverside.ltd/error?msg=not_in_guild");
       }
     } catch (error) {
       console.error("Erro ao verificar membros da guilda:", error);
-      return res.redirect("https://eclipse-serverside.vercel.app/error?msg=guild_check_failed");
+      return res.redirect("https://www.serverside.ltd/error?msg=guild_check_failed");
     }
 
     let userRoles = [];
@@ -79,14 +79,14 @@ router.get("/discord", async (req, res) => {
       userRoles = roles.filter((role) => ALLOWED_ROLES.includes(role));
 
       if (userRoles.length === 0) {
-        return res.redirect("https://eclipse-serverside.vercel.app/error?msg=no_role_permission");
+        return res.redirect("https://www.serverside.ltd/error?msg=no_role_permission");
       }
     } catch (error) {
       if (error.response && error.response.status === 404) {
-        return res.redirect("https://eclipse-serverside.vercel.app/error?msg=not_in_guild");
+        return res.redirect("https://www.serverside.ltd/error?msg=not_in_guild");
       }
       console.error("Erro ao buscar cargos do usuário:", error);
-      return res.redirect("https://eclipse-serverside.vercel.app/error?msg=role_fetch_failed");
+      return res.redirect("https://www.serverside.ltd/error?msg=role_fetch_failed");
     }
 
     const roleDetailsResponse = await axios.get(
@@ -132,10 +132,10 @@ router.get("/discord", async (req, res) => {
     });
 
     res.redirect(
-      `https://eclipse-serverside.vercel.app/auth/?token=${token}&userId=${user.id}&discordId=${id}`
+      `https://www.serverside.ltd/auth/?token=${token}&userId=${user.id}&discordId=${id}`
     );
   } catch (error) {
-    res.redirect("https://eclipse-serverside.vercel.app/error");
+    res.redirect("https://www.serverside.ltd/error");
     console.error("Erro ao autenticar com Discord:", error);
     res.status(500).json({ error: "Erro ao autenticar" });
   }
