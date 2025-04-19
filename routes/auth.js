@@ -141,4 +141,39 @@ router.get("/discord", async (req, res) => {
   }
 });
 
+router.get("/verify-discord", async (req, res) => {
+  const { discordId } = req.query;
+
+  if (!discordId) {
+    return res.status(400).json({ error: "discordId não fornecido." });
+  }
+
+  try {
+    const guildMemberResponse = await axios.get(
+      `https://discord.com/api/guilds/${DISCORD_GUILD_ID}/members/${discordId}`,
+      { headers: { Authorization: `Bot ${DISCORD_BOT_TOKEN}` } }
+    );
+
+    const user = guildMemberResponse.data.user;
+    const roles = guildMemberResponse.data.roles || [];
+
+    const hasValidRole = roles.some((roleId) => ALLOWED_ROLES.includes(roleId));
+    const hasUsername = !!user.global_name;
+    const hasAvatar = !!user.avatar;
+
+    if (!hasValidRole || !hasUsername || !hasAvatar) {
+      return res.json({ valid: false });
+    }
+
+    return res.json({ valid: true });
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      return res.json({ valid: false });
+    }
+
+    console.error("Erro ao verificar Discord:", error);
+    return res.status(500).json({ error: "Erro ao verificar Discord." });
+  }
+});
+
 export default router;
