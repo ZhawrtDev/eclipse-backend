@@ -1,48 +1,16 @@
 import express from "express";
 import { db } from "../firebase.js";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  where,
-  addDoc,
-} from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where, addDoc, deleteDoc } from "firebase/firestore";
 import axios from "axios";
 
 const router = express.Router();
 
 router.post("/", async (req, res) => {
   try {
-    const { owner, id } = req.query;
+    console.log("Dados recebidos:", req.body);
+    let { name, displayName, thumbnail, timestamp, owner } = req.body;
 
-    if (!owner || !id) {
-      return res.status(400).json({ error: "Parâmetros owner e id são obrigatórios!" });
-    }
-
-    // Verifica se o usuário existe
-    const userRef = doc(db, "users", id);
-    const userSnap = await getDoc(userRef);
-
-    if (!userSnap.exists()) {
-      return res.status(404).json({ error: "Usuário não encontrado!" });
-    }
-
-    const userData = userSnap.data();
-
-    if (userData.token !== owner) {
-      return res.status(401).json({ error: "Token inválido!" });
-    }
-
-    if (userData.discordRole === "STANDARD") {
-      return res.status(403).json({ error: "Permissão negada para usuários com discordRole STANDARD." });
-    }
-
-    // Dados do body
-    let { name, displayName, thumbnail, timestamp } = req.body;
-
-    if (!name || !displayName || !thumbnail || !timestamp) {
+    if (!name || !displayName || !thumbnail || !timestamp || !owner) {
       return res.status(400).json({ error: "Todos os campos são obrigatórios!" });
     }
 
@@ -76,10 +44,7 @@ router.post("/", async (req, res) => {
 
     const addedPlayerRef = await addDoc(playersRef, newPlayer);
 
-    res.json({
-      message: "Jogador adicionado com sucesso!",
-      player: { id: addedPlayerRef.id, ...newPlayer },
-    });
+    res.json({ message: "Jogador adicionado com sucesso!", player: { id: addedPlayerRef.id, ...newPlayer } });
   } catch (error) {
     console.error("Erro ao adicionar jogador:", error);
     res.status(500).json({ error: "Erro interno do servidor." });
@@ -134,23 +99,23 @@ router.get("/get", async (req, res) => {
       return res.status(400).json({ error: "O parâmetro 'id' é obrigatório!" });
     }
 
-    const userSnap = await getDoc(doc(db, "users", id));
+    const userRef = doc(db, "users", id);
+    const userSnap = await getDoc(userRef);
+
     if (!userSnap.exists()) {
       return res.status(404).json({ error: "Usuário não encontrado." });
     }
 
     const userData = userSnap.data();
+
     if (userData.discordRole === "STANDARD") {
       return res.status(403).json({ error: "Acesso negado." });
     }
 
     owner = owner.toLowerCase();
 
-    const playersQuery = query(
-      collection(db, "players"),
-      where("owner", "==", owner)
-    );
-
+    const playersRef = collection(db, "players");
+    const playersQuery = query(playersRef, where("owner", "==", owner));
     const playersSnap = await getDocs(playersQuery);
 
     const players = playersSnap.docs.map((docSnap) => ({
