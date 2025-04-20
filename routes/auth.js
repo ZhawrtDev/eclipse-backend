@@ -43,6 +43,8 @@ router.get("/discord", async (req, res) => {
       }),
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
+    
+    console.log('Token Response:', tokenResponse.data); 
 
     const accessToken = tokenResponse.data.access_token;
 
