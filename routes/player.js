@@ -89,14 +89,10 @@ router.post("/delete", async (req, res) => {
 
 router.get("/get", async (req, res) => {
   try {
-    let { owner, id } = req.query;
+    const { owner, id } = req.query;
 
-    if (!owner) {
-      return res.status(400).json({ error: "O parâmetro 'owner' é obrigatório!" });
-    }
-
-    if (!id) {
-      return res.status(400).json({ error: "O parâmetro 'id' é obrigatório!" });
+    if (!owner || !id) {
+      return res.status(400).json({ error: "Parâmetros 'owner' e 'id' são obrigatórios!" });
     }
 
     const userRef = doc(db, "users", id);
@@ -112,16 +108,18 @@ router.get("/get", async (req, res) => {
       return res.status(403).json({ error: "Acesso negado." });
     }
 
-    owner = owner.toLowerCase();
+    const ownerLower = owner.toLowerCase();
 
-    const playersRef = collection(db, "players");
-    const playersQuery = query(playersRef, where("owner", "==", owner));
+    const playersQuery = query(
+      collection(db, "players"),
+      where("owner", "==", ownerLower)
+    );
+
     const playersSnap = await getDocs(playersQuery);
 
     const players = playersSnap.docs.map((docSnap) => ({
       id: docSnap.id,
       ...docSnap.data(),
-      owner: docSnap.data().owner.toLowerCase(),
     }));
 
     res.json(players);
