@@ -3,6 +3,12 @@ import axios from "axios";
 import cors from "cors";
 import dotenv from "dotenv";
 import { db } from "./firebase.js";
+import {
+  collection,
+  doc,
+  setDoc,
+  getDocs,
+} from "firebase/firestore";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/user.js";
 import nameRoutes from "./routes/name.js";
@@ -84,24 +90,21 @@ app.post("/save-game", async (req, res) => {
     : new Date().toISOString();
 
   try {
-    await db
-      .collection("games")
-      .doc(id.toString())
-      .set({
-        id: String(id),
-        name,
-        creatorName,
-        playing,
-        visits,
-        maxPlayers,
-        updated: new Date(fixedUpdated),
-        created: new Date(fixedCreated),
-        favoritedCount,
-        universeAvatarType,
-        imageUrl: finalImageUrl,
-        description,
-        jobId,
-      });
+    await setDoc(doc(collection(db, "games"), id.toString()), {
+      id: String(id),
+      name,
+      creatorName,
+      playing,
+      visits,
+      maxPlayers,
+      updated: new Date(fixedUpdated),
+      created: new Date(fixedCreated),
+      favoritedCount,
+      universeAvatarType,
+      imageUrl: finalImageUrl,
+      description,
+      jobId,
+    });
 
     return res.status(200).json({ message: "✅ Dados salvos com sucesso!" });
   } catch (error) {
@@ -114,8 +117,8 @@ app.post("/save-game", async (req, res) => {
 
 app.get("/games", async (req, res) => {
   try {
-    const snapshot = await db.collection("games").get();
-    const games = snapshot.docs.map((doc) => doc.data());
+    const querySnapshot = await getDocs(collection(db, "games"));
+    const games = querySnapshot.docs.map((doc) => doc.data());
 
     if (!games || games.length === 0) {
       return res.status(404).json({ message: "Nenhum jogo encontrado" });
