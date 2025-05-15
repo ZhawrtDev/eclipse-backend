@@ -8,6 +8,7 @@ import {
   doc,
   setDoc,
   getDocs,
+  deleteDoc 
 } from "firebase/firestore";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/user.js";
@@ -130,6 +131,25 @@ app.get("/games", async (req, res) => {
     return res
       .status(500)
       .json({ message: "Erro ao buscar jogos", error: error.message });
+  }
+});
+
+
+app.delete("/games/delete", async (req, res) => {
+  const { id } = req.query;
+
+  if (!id) {
+    return res.status(400).json({ message: "ID do jogo não fornecido" });
+  }
+
+  try {
+    await deleteDoc(doc(db, "games", id.toString()));
+    return res.status(200).json({ message: "✅ Jogo deletado com sucesso!" });
+  } catch (error) {
+    console.error("❌ Erro ao deletar jogo:", error);
+    return res
+      .status(500)
+      .json({ message: "Erro ao deletar jogo", error: error.message });
   }
 });
 
