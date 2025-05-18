@@ -119,7 +119,14 @@ app.post("/save-game", async (req, res) => {
 app.get("/games", async (req, res) => {
   try {
     const querySnapshot = await getDocs(collection(db, "games"));
-    const games = querySnapshot.docs.map((doc) => doc.data());
+    const games = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        ...data,
+        updated: data.updated?.toDate().toISOString(),
+        created: data.created?.toDate().toISOString(),
+      };
+    });
 
     if (!games || games.length === 0) {
       return res.status(404).json({ message: "Nenhum jogo encontrado" });
@@ -133,6 +140,7 @@ app.get("/games", async (req, res) => {
       .json({ message: "Erro ao buscar jogos", error: error.message });
   }
 });
+
 
 
 app.delete("/games/delete", async (req, res) => {
