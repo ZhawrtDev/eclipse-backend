@@ -43,7 +43,6 @@ app.post("/save-game", async (req, res) => {
     playing,
     visits,
     maxPlayers,
-    updated,
     created,
     favoritedCount,
     universeAvatarType,
@@ -73,9 +72,7 @@ app.post("/save-game", async (req, res) => {
     if (imageData?.imageUrl) {
       finalImageUrl = imageData.imageUrl;
     } else {
-      console.warn(
-        "⚠️ Não foi possível obter imageUrl da API do Roblox, usando fallback."
-      );
+      console.warn("⚠️ Não foi possível obter imageUrl da API do Roblox, usando fallback.");
       finalImageUrl = thumbApiUrl;
     }
   } catch (error) {
@@ -83,9 +80,6 @@ app.post("/save-game", async (req, res) => {
     finalImageUrl = thumbApiUrl;
   }
 
-  let fixedUpdated = updated?.match(/^\d{4}-\d{2}-\d{2}/)
-    ? updated
-    : new Date().toISOString();
   let fixedCreated = created?.match(/^\d{4}-\d{2}-\d{2}/)
     ? created
     : new Date().toISOString();
@@ -98,7 +92,7 @@ app.post("/save-game", async (req, res) => {
       playing,
       visits,
       maxPlayers,
-      updated: new Date(fixedUpdated),
+      updated: new Date(), // <-- Aqui pega o tempo atual sempre
       created: new Date(fixedCreated),
       favoritedCount,
       universeAvatarType,
@@ -115,6 +109,7 @@ app.post("/save-game", async (req, res) => {
       .json({ message: "Erro ao salvar no banco", error: error.message });
   }
 });
+
 
 app.get("/games", async (req, res) => {
   try {
